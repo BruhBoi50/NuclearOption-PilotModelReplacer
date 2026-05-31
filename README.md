@@ -1,7 +1,7 @@
 # NuclearOption-PilotModelReplacer
 Mod for Nuclear Option that replaces the pilot model with another character. This mod comes with 3 characters that you can swap the pilot with
 
-!(Screenshots/ScreenshotA.png)
+![ScreenshotA](Screenshots/ScreenshotA.png)
 
 # Installation
 To install this mod, make sure you have [BepInEx](https://github.com/BepInEx/BepInEx) installed on your copy of Nuclear Option. 
