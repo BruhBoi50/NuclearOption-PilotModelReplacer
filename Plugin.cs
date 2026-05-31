@@ -21,7 +21,6 @@ namespace PilotModelReplacer
         private void Awake()
         {
             //Setup configuration
-
             ConfigPlayerOnly = Config.Bind("General", 
                                            "OnlyChangePlayer", false,
                                            "If enabled, the mod will only replace the player's pilot model. Otherwise, it replaces" +
@@ -48,18 +47,6 @@ namespace PilotModelReplacer
             else
             {
                 Logger.LogError("Could not find bundle of name: " + ConfigBundleName.Value);
-
-                /*
-                AssetBundle anyBundle = FindAnyBundle(modFolder, "pilot");
-
-                if(anyBundle == null)
-                {
-                    Logger.LogError("Bundles Not found!");
-                    return;
-                }
-
-                CustomBundle = anyBundle;
-                */
                 return;
             }
 
@@ -82,36 +69,7 @@ namespace PilotModelReplacer
             originalModel.sharedMesh = newModel.sharedMesh;
 
         }
-
-        static AssetBundle FindAnyBundle(string path, string prefabName)
-        {
-            string[] files = Directory.GetFiles(path);
-
-            foreach (string filePath in files)
-            {
-
-                AssetBundle bundle = AssetBundle.LoadFromFile(filePath);
-                if (bundle == null) continue;
-
-
-                if (bundle.Contains(prefabName))
-                {
-                    GameObject prefab = bundle.LoadAsset<GameObject>(prefabName);
-                    if (prefab != null)
-                    {
-                        Debug.Log("Found prefab" + prefabName + " in path");
-
-                        // Return this bundle path
-                        return bundle;
-                    }
-                }
-
-                bundle.Unload(true);
-            }
-
-            return null;
-        }
-
+        
         static void FixBoneOrder(SkinnedMeshRenderer renderer)
         {
             Transform[] bonesCopy = renderer.bones;
