@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace PilotModelReplacer
 {
-    [BepInPlugin("com.bruhboi.pilotmodelreplacer", "Pilot Model Replacer", "1.0.0")]
+    [BepInPlugin("com.bruhboi.pilotmodelreplacer", "Pilot Model Replacer", "1.1.0")]
     public class Plugin : BaseUnityPlugin
     {
         public static AssetBundle CustomBundle;
@@ -21,10 +21,10 @@ namespace PilotModelReplacer
         private void Awake()
         {
             //Setup configuration
+
             ConfigPlayerOnly = Config.Bind("General", 
                                            "OnlyChangePlayer", false,
-                                           "If enabled, the mod will only replace the player's pilot model. Otherwise, it replaces" +
-                                           " all pilots. Doesn't work well though");
+                                           "If enabled, the mod will only replace the player's pilot model. Otherwise, it replaces all pilots");
 
             ConfigBundleName = Config.Bind("Model Settings",
                                            "AssetBundleFileName",
@@ -40,9 +40,11 @@ namespace PilotModelReplacer
             if (File.Exists(bundlePath))
             {
                 CustomBundle = AssetBundle.LoadFromFile(bundlePath);
-                //Load the prefab of the given name
+
+                //Load the prefab
                 CustomModelPrefab = CustomBundle.LoadAsset<GameObject>("pilot");
                 Logger.LogInfo("Custom player model asset bundle loaded successfully");
+
             }
             else
             {
@@ -54,8 +56,10 @@ namespace PilotModelReplacer
             var harmony = new Harmony("com.bruhboi.pilotmodelreplacer");
             harmony.PatchAll();
         }
+        
 
-        public static void SwapModel(SkinnedMeshRenderer originalModel, SkinnedMeshRenderer newModel)
+        //Replaces the model
+        public static void ReplaceModel(SkinnedMeshRenderer originalModel, SkinnedMeshRenderer newModel)
         {
 
             Debug.Log("[PilotReplacer] Replacing model now...");
@@ -69,7 +73,10 @@ namespace PilotModelReplacer
             originalModel.sharedMesh = newModel.sharedMesh;
 
         }
-        
+
+
+        //The bone order of the Pilot model has the leg bones switched up.
+        //Thats why this function has to switch the last 3 bones
         static void FixBoneOrder(SkinnedMeshRenderer renderer)
         {
             Transform[] bonesCopy = renderer.bones;
@@ -86,15 +93,53 @@ namespace PilotModelReplacer
 
     }
 
-    //Target the PilotDismounted script
-    [HarmonyPatch(typeof(PilotDismounted), "Awake")]
+    //There are two pilot scripts. One for the cockpit pilot and the dismounted pilot
+    //Target the Pilot script
+    [HarmonyPatch(typeof(Pilot), "Pilot_OnInitialize", MethodType.Normal)]
     public class PilotPatchA
+    {
+        [HarmonyPostfix]
+        public static void Postfix(Pilot __instance)
+        {
+            Debug.Log("[PilotReplacer] Patch triggered: Pilot");
+
+            if (Plugin.ConfigPlayerOnly.Value && __instance.GetComponent<GLOC>() == null) //dumb but works. Only method that works
+            {
+                Debug.Log("[PilotReplacer] Target not player. Skipping");
+                return;
+            }
+            if (Plugin.CustomModelPrefab == null)
+            {
+                Debug.LogError("[PilotReplacer] Prefab not found");
+                return;
+            }
+
+            SkinnedMeshRenderer originalModel = __instance.GetComponentInChildren<SkinnedMeshRenderer>();
+            SkinnedMeshRenderer newModel = Plugin.CustomModelPrefab.GetComponentInChildren<SkinnedMeshRenderer>();
+
+            if (originalModel == null)
+            {
+                Debug.LogError("[PilotReplacer] Could not find model in object!");
+                return;
+            }
+
+            Plugin.ReplaceModel(originalModel, newModel);
+
+        }
+
+    }
+
+    
+    //Target the PilotDismounted script
+    [HarmonyPatch(typeof(PilotDismounted), "Setup")]
+    public class PilotPatchB
     {
         [HarmonyPostfix]
         public static void Postfix(PilotDismounted __instance)
         {
             Debug.Log("[PilotReplacer] Patch triggered: Dismounted");
 
+            Debug.Log(__instance.NetworkpilotNumber);
 
             if (Plugin.ConfigPlayerOnly.Value && __instance.Networkplayer == null)
             {
@@ -116,7 +161,7 @@ namespace PilotModelReplacer
                 return;
             }
 
-            Plugin.SwapModel(originalModel, newModel);
+            Plugin.ReplaceModel(originalModel, newModel);
 
         }
 
@@ -124,42 +169,6 @@ namespace PilotModelReplacer
 
     
 
-    [HarmonyPatch(typeof(Pilot), "Pilot_OnInitialize", MethodType.Normal)]
-    public class PilotPatchB
-    {
-        [HarmonyPostfix]
-        public static void Postfix(Pilot __instance)
-        {
-            Debug.Log("[PilotReplacer] Patch triggered: Pilot");
 
-            if (Plugin.ConfigPlayerOnly.Value && __instance.player == null && __instance.GetComponent<GLOC>() == null)
-            {
-
-                Debug.Log("[PilotReplacer] Target not player. Skipping");
-                return;
-
-            }
-
-
-            if (Plugin.CustomModelPrefab == null)
-            {
-                Debug.LogError("[PilotReplacer] Prefab not found");
-                return;
-            }
-
-            SkinnedMeshRenderer originalModel = __instance.GetComponentInChildren<SkinnedMeshRenderer>();
-            SkinnedMeshRenderer newModel = Plugin.CustomModelPrefab.GetComponentInChildren<SkinnedMeshRenderer>();
-
-            if (originalModel == null)
-            {
-                Debug.LogError("[PilotReplacer] Could not find model in object!");
-                return;
-            }
-
-            Plugin.SwapModel(originalModel, newModel);
-
-        }
-
-    }
 
 }
