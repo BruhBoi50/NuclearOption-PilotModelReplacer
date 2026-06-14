@@ -1,5 +1,5 @@
 # Nuclear Option: Pilot Model Replacer
-Mod for Nuclear Option that replaces the pilot model with another character. This mod comes with 3 characters that you can swap the pilot with
+Mod for Nuclear Option that replaces the pilot model with another character. This mod comes with 5 different characters that you can swap the pilot with
 
 [Video Demonstration](https://www.youtube.com/watch?v=LV2A84NOMGQ)
 
