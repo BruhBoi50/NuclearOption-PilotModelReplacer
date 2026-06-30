@@ -16,11 +16,16 @@ plugins
 └─ PilotModelReplacer
   └─ assets
     └─ andoris_pilot
+    └─ cardboard_pilot
     └─ cj_pilot
-    └─ ir_sams_10km_range
+    └─ kiryu_pilot
+    └─ wapple_pilot
   └─ PilotModelReplacer.dll  
 └─ other plugins will appear here...
 ```
+
+If you want to create your own pilot models, check out my other repository [here](https://github.com/BruhBoi50/NuclearOption-PilotModelTools). It includes a guide on how to do that there.
+
 
 This is my first mod and it may a few bugs. I will try to patch them later
 
